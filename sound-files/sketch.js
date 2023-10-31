@@ -1,39 +1,54 @@
-let fileNames = ["./epic-hip-hop.mp3", "./funny-tango.mp3"];
+let fileNames = ["./DRYFLOWER.mp3"];
 
 let songs = [];
 let currentSongIndex;
 let currentSong;
+let amplitude;
+
+let rectangles = [];
+let backgroundImage; 
 
 function preload() {
   for (let i = 0; i < fileNames.length; i++) {
     songs.push(loadSound(fileNames[i]));
   }
-}
-
-function nextSong() {
-  currentSong.stop();
-
-  currentSongIndex = (currentSongIndex + 1) % songs.length;
-  currentSong = songs[currentSongIndex];
-
-  currentSong.play();
+  backgroundImage = loadImage("daisy.png"); 
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-
   currentSongIndex = 0;
   currentSong = songs[currentSongIndex];
+  amplitude = new p5.Amplitude();
+  amplitude.setInput(currentSong);
 }
 
 function draw() {
-  if (currentSong.isPlaying()) {
-    background(20, 220, 120);
-  } else if (currentSong.isPaused()) {
-    background(20, 120, 220);
-  } else {
-    background(220, 20, 120);
+  background(0); 
+
+  let level = amplitude.getLevel();
+
+  if (level > 0.1) {
+    let x = random(width);
+    let c = color(random(255), random(255), random(255));
+    let rectSize = map(level, 0, 1, 10, 100);
+
+    rectangles.push({ x: x, y: 0, color: c, size: rectSize });
   }
+
+  for (let i = rectangles.length - 1; i >= 0; i--) {
+    let rectObj = rectangles[i];
+    fill(rectObj.color);
+    noStroke();
+    rect(rectObj.x, rectObj.y, rectObj.size, rectObj.size);
+    rectObj.y += 5;
+
+    if (rectObj.y > height) {
+      rectangles.splice(i, 1);
+    }
+  }
+  
+  image(backgroundImage, 0, 0, width, height); 
 }
 
 function keyReleased() {
@@ -45,7 +60,9 @@ function keyReleased() {
     } else {
       currentSong.play();
     }
-  } else if (key == "n") {
-    nextSong();
-  }
+  } 
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }
